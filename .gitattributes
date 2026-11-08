@@ -1,0 +1,14 @@
+# Every file here is content-hashed by MANIFEST.txt and checked by the test suite,
+# so git must not rewrite line endings: a checkout that turned LF into CRLF would
+# change the bytes and make the manifest disagree with the tree.  `-text` disables
+# the conversion for everything; diffs still work normally.
+#
+# This matters more here than in a Python-only tree.  The VocalPatch folder ships
+# PowerShell and .txt files that carry a UTF-8 BOM on purpose - Windows PowerShell
+# 5.1 reads a .ps1 without a BOM as ANSI and turns the Chinese text in them into
+# mojibake - and `VocalPatch/.gitattributes` says the same thing for that subtree.
+* -text
+
+# The shipped binaries are binary in every sense.
+*.dll binary
+*.exe binary

@@ -1,0 +1,26 @@
+# ---- .NET build output: the same rules the VocalPatch tree already carries ----
+bin/
+obj/
+*.user
+.vs/
+
+# ---- what package.ps1 assembles ----
+# prompt.md's own steps build these; they are a release, not source.
+VocalPatch/dist/
+VocalPatch/dist-zip/
+VocalPatch/native/out/
+
+# ---- hand-built helper executables (sources are committed, the exes are not) ----
+VocalPatch/native/load_host_*.exe
+VocalPatch/tools/hotkey_host.exe
+
+# ---- copies parked because a running editor held the file ----
+*.locked-*
+
+# ---- machine-local runtime config written at deploy time ----
+vocalpatch.ini
+
+# ---- python: the repository's own integrity tool and its tests ----
+__pycache__/
+*.py[cod]
+.pytest_cache/

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>VocalPatch.Cli</RootNamespace>
+    <AssemblyName>vpatch</AssemblyName>
+    <Description>Command-line front end for the VocalPatch toolkit: convert, job, pinyin, harmony, autosave.</Description>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VocalPatch.Core\VocalPatch.Core.csproj" />
+  </ItemGroup>
+
+</Project>

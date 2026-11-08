@@ -1,0 +1,240 @@
+﻿VocalPatch 0.1.0  安装说明
+============================================================
+对标 VOCALOIDPatcher 的功能，覆盖 CeVIO / Synthesizer V Studio /
+VoiSona / OpenUtau / Piapro Studio / ACE Studio / XStudio。只做功能，不做汉化。
+
+
+一、包装里有什么
+------------------------------------------------------------
+  QUICKSTART.zh.md            中文快速上手（更详细，建议也读）
+  README.md                   项目说明（英文）
+  cli\vpatch.exe              纯命令行：格式转换 + 批量作业
+  injector\vpatch-inject.exe  注入器 + 动作命令行 + 文件自动备份
+  loader\vocalpatch_loader_x64.dll   可注入的原生加载器（64 位）
+  loader\vocalpatch_loader_x86.dll   可注入的原生加载器（32 位）
+  payload\                    进程内注入的托管运行时（连加载器一起注入）
+  openutau\VocalPatch *\      8 个已经做好的 OpenUtau 插件文件夹
+  dropin\winmm.dll            免安装注入用：复制进编辑器文件夹即可（见四·补）
+                              SynthV 2 / SynthV V1 / VoiSona / Piapro NT / ACE Studio / XStudio / CeVIO AI
+  dropin\hostfxr.dll          OpenUtau / SynthUTAU / UtauV 三个自包含 .NET 用
+  dropin\deploy_dropin.ps1    一键安装/卸载上面两个 shim（纯复制粘贴的批量化）
+  dropin\说明.txt             免安装注入的完整说明
+
+
+二、运行环境
+------------------------------------------------------------
+  * Windows 10 / 11（64 位）
+  * .NET 8 运行时 —— cli、injector、OpenUtau 插件需要它
+      下载：https://dotnet.microsoft.com/download/dotnet/8.0
+      选 ".NET Desktop Runtime 8"（一般也带上 .NET Runtime 8）
+      检查：命令行运行  dotnet --list-runtimes
+            能看到 Microsoft.NETCore.App 8.x 即可
+  * 注入用的托管运行时（payload）是 .NET Framework 4.7.2，
+    Windows 10/11 系统自带，不需要单独安装
+
+
+三、安装方式 A：OpenUtau 插件（最省事，不用注入）
+------------------------------------------------------------
+  1. 找到 OpenUtau 的插件目录，一般是  <OpenUtau 安装目录>\Plugins\
+  2. 把  openutau\  下面的每个 "VocalPatch xxx" 文件夹整个复制进 Plugins\
+  3. 重启 OpenUtau
+  4. 选中音符 -> 插件菜单里就会出现：
+       VocalPatch Quantize、VocalPatch Swing、VocalPatch Staccato、
+       VocalPatch Transpose +12、VocalPatch Normalize、
+       VocalPatch Harmony Third Up、VocalPatch Pinyin、
+       VocalPatch Quantize + Pinyin
+     原理：OpenUtau 把选中音符写成临时 UST 交给插件，插件改完写回，
+     所有没被动作碰到的行原样保留。
+
+
+四、安装方式 B：注入 CeVIO / SynthV / VoiSona / Piapro
+------------------------------------------------------------
+  前提：编辑器先启动并保持运行；动手前先保存好工程。
+
+  第 1 步  看有哪些可以注入的进程：
+      injector\vpatch-inject.exe targets
+
+  第 2 步  注入（把 <进程名或PID> 换成上一步看到的，路径用完整路径）：
+      injector\vpatch-inject.exe inject synthv-studio "<完整路径>\payload\vocalpatch_loader.dll"
+      injector\vpatch-inject.exe inject CeVIO        "<完整路径>\payload\vocalpatch_loader.dll"
+      injector\vpatch-inject.exe inject VoiSona      "<完整路径>\payload\vocalpatch_loader.dll"
+      injector\vpatch-inject.exe inject Piapro       "<完整路径>\payload\vocalpatch_loader.dll"
+
+  位数必须一致：
+      * 64 位编辑器 -> 注入  payload\vocalpatch_loader.dll （就是 x64 那份）
+      * 32 位老编辑器 -> 注入  loader\vocalpatch_loader_x86.dll
+        且注入器也得是 32 位：
+          dotnet publish src\VocalPatch.Injector -c Release -r win-x86 --self-contained false -o dist-injector-x86
+
+  第 3 步  怎么算注入成功——看两个日志（注入是异步的，进程要活着几秒）：
+      %TEMP%\vocalpatch-loader.log    原生加载器日志，正常结尾是  loader ok
+      %TEMP%\vocalpatch-editor.log    托管运行时日志，能看到 profile / watching / hotkey 等
+    每行都带 pid；多个编辑器共用一个日志文件，按 pid 分组看。
+
+
+四·补（推荐）：drop-in —— 把 dll 复制进编辑器文件夹，打开就注入
+------------------------------------------------------------
+  不要安装器、不要注册表、不要管理员（除非编辑器本身装在 Program Files）。
+  就是把一个 dll 丢进编辑器自己的文件夹，然后照常打开编辑器。
+
+  dropin\winmm.dll  -> 放进编辑器 exe 的同目录：
+        D:\Synthesizer V Studio 2 Pro\
+        D:\Synthesizer V Studio Pro\            （V1）
+        D:\VoiSona118\                          （破解版 .bat 启动的就是这里的 VoiSona.exe）
+        C:\Program Files\Techno-Speech\VoiSona\              需要管理员
+        C:\Program Files\Crypton\Piapro Studio NT\Standalone\ 需要管理员
+        C:\Program Files\ACE Studio\                         需要管理员
+        D:\NetEase Cloud Music XStudio\         （网易云 X Studio）
+        C:\Program Files\CeVIO\CeVIO AI\                     需要管理员
+
+  dropin\hostfxr.dll -> 放进自包含 .NET 的编辑器目录：
+        D:\OpenUtau\
+        D:\SynthUTAU-Release-win-x64-20261005\SynthUTAU\
+        D:\UtauV\bin\                           （注意是 bin 子目录）
+        先把原来的 hostfxr.dll 改名成 hostfxr.orig.dll 保留，
+        再把我们的 hostfxr.dll 复制进去。
+        卸载时：删掉我们的 hostfxr.dll，把 hostfxr.orig.dll 改回 hostfxr.dll。
+
+  一键做（等价于手动复制粘贴）：
+        powershell -ExecutionPolicy Bypass -File dropin\deploy_dropin.ps1                 只看状态
+        powershell -ExecutionPolicy Bypass -File dropin\deploy_dropin.ps1 -Apply          安装
+        powershell -ExecutionPolicy Bypass -File dropin\deploy_dropin.ps1 -Apply -Remove  卸载
+        装在 C:\Program Files 里的，用“以管理员身份运行”的 PowerShell 跑同样命令。
+
+  原理：这些 exe 的导入表里静态引用了 winmm.dll，而 winmm 不在 KnownDLLs 名单。
+        Windows 解析静态导入时先查“程序所在目录”，于是加载了我们放在那里的 winmm.dll。
+        我们的 DllMain 只做一件事：开线程去加载 vocalpatch_loader.dll；
+        其余每个导出函数都原样转发给 C:\Windows\System32\winmm.dll，行为完全不变。
+        为了永远不会漏掉入口点，shim 把 System32\winmm.dll 的全部 180 个导出名都转发了
+        一遍——漏一个，静态导入就解析不了，整个编辑器会在启动时直接打不开。
+        自包含 .NET 的（OpenUtau / SynthUTAU / UtauV），apphost 按自己目录加载 hostfxr，
+        所以必须用改名保留原件的做法（不能用系统里的 hostfxr）。
+
+  CeVIO AI 也能进去：它自己（CeVIO AI.exe）确实是纯 .NET 程序集、没有原生导入表，
+        但它的音频栈不是——MediaSuite.dll、CeVIO.Audio.dll、CeVIO.Talk.External2_x64.dll
+        都静态引用了 winmm.dll。这几个 dll 的导入同样走“程序所在目录优先”，
+        所以把 winmm.dll 放进 C:\Program Files\CeVIO\CeVIO AI\ 就进进程了，
+        和别的编辑器同一套机制，没有改 CeVIO 的任何配置文件。
+
+  详细说明见  dropin\说明.txt
+
+
+四·补二（备选）：注册一次，之后永久全自动注入（AppInit_DLLs）
+------------------------------------------------------------
+  这是"打开编辑器就自带，不需要任何二次操作"的做法。原理：把加载器注册进系统
+  的 AppInit_DLLs，Windows 之后在每个进程启动时自动把它载入；加载器对"不是目标
+  编辑器"的进程会立刻静默退出，只在五种编辑器里启动运行时。
+
+  第 1 步  双击  install-appinit.cmd  （会弹 UAC，点"是"）
+             它做三件事：把 payload 复制到无空格目录 C:\ProgramData\VocalPatch\payload；
+             写入 HKLM ...\Windows\AppInit_DLLs；把 LoadAppInit_DLLs=1、
+             RequireSignedAppInit_DLLs=0
+  第 2 步  关闭并重新打开编辑器（AppInit 只对"新启动"的进程生效）。
+             以后每次启动编辑器都会自动注入，无需再点任何东西。
+
+  验证：打开编辑器后看  %TEMP%\vocalpatch-editor.log ，应出现该 pid 的
+        profile / watching / hotkey 行。
+
+  前提与说明：
+    * Secure Boot 必须关闭（Windows 在 Secure Boot 下会完全禁用 AppInit_DLLs）。
+      本机已确认关闭。若开着，只能退回方式 B 手动注入。
+    * 需要管理员权限（写 HKLM）。这就是"导入 DLL"的那一次性操作。
+    * 只注册 64 位加载器；32 位老编辑器仍需按方式 B 手动注入 x86 加载器。
+    * 安装目录默认 C:\ProgramData\VocalPatch，路径不能含空格（AppInit 用空格分隔列
+      表）。要换位置：install-appinit.ps1 -InstallDir "D:\VocalPatch"。
+    * 想临时停掉：uninstall-appinit.cmd（同样管理员，可加 -RemoveFiles 删文件）。
+
+  手动注册（不想用脚本时，管理员 PowerShell）：
+     $k='HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Windows'
+     Set-ItemProperty $k AppInit_DLLs 'C:\ProgramData\VocalPatch\payload\vocalpatch_loader.dll'
+     Set-ItemProperty $k LoadAppInit_DLLs 1 -Type DWord
+     Set-ItemProperty $k RequireSignedAppInit_DLLs 0 -Type DWord
+
+
+五、安装方式 C：纯命令行处理工程文件
+------------------------------------------------------------
+  不用开编辑器也能跑同一套动作（和注入运行时是同一段代码）：
+      cli\vpatch.exe formats                          列出支持的格式
+      cli\vpatch.exe info "song.svp"                  看看解析出什么
+      cli\vpatch.exe convert "song.svp" "song.ust"    换格式
+      cli\vpatch.exe job swing --set division=8 --set amount=55 -o "out.ust" "song.svp"
+      cli\vpatch.exe pinyin -o "out.ust" "song.ust"
+
+      injector\vpatch-inject.exe actions              列出动作
+      injector\vpatch-inject.exe action "song.ust" swing
+      injector\vpatch-inject.exe action "song.ust" export
+      injector\vpatch-inject.exe action "song.ust" restore
+  action 和热键走同一个入口：原地改、留 .bak、可随时还原。
+
+
+六、注入后能按的热键（全部是 Ctrl+Alt+...）
+------------------------------------------------------------
+  V  snapshot  立刻备份一份到 .vocalpatch-autosave\
+  S  swing     8 分音符摇摆 55%
+  Q  quantize  16 分量化，力度 100%
+  C  staccato  断音（每个音缩短，后面补休止，不丢时间）
+  T  transpose 整体升八度（12 个半音）
+  N  normalize 力度归一
+  P  pinyin    歌词中文 -> 拼音（原地改，先备份）
+  H  harmony   加一轨上方三度和声
+  L  lyrics    剪贴板里的歌词铺到音符上（一行一个音节）
+  E  export    导出成其它编辑器的格式，落到 vocalpatch-export\
+  Z  restore   用 .bak 还原上一次原地修改
+
+  十一个动作都有默认键位。L（lyrics）为什么读剪贴板：热键没法让你打字，所以
+  歌词从剪贴板来——先把歌词一行一个音节复制好，例如：
+      你好
+      世界
+      唱歌
+  按 L 后从第一个音符开始循环铺满。剪贴板是空的就什么都不做，不会清空你的歌词。
+
+  改键位：编辑  payload\vpatch-editor.ini
+      hotkey.staccato=0x4B     （字母 / 0x51 / 81 三种写法都行）
+  排查热键：每按一次都会往 %TEMP%\vocalpatch-editor.log 记一行 <动作> -> <结果>。
+      若完全没有这一行，把诊断开关打开：
+      hotkeydebug=true         （会打印每个按键的 vk 码和 ctrl/alt 状态）
+
+
+七、配置：payload\vpatch-editor.ini（全部可选）
+------------------------------------------------------------
+  profile=voisona         强制指定 profile（短 id / 进程名 / 显示名都认）
+  autosave=true           运行中定时快照
+  patchsaves=true         每次保存都顺手快照
+  snapshotinterval=30     同一文件两次快照之间的最小间隔（秒）
+  watch=D:\我的工程;E:\备份\vsqx   额外监视目录，分号分隔
+  hotkey.harmony=0x4A     改键位
+  hotkeydebug=false       打印钩子看到的每一个按键
+
+  说明：文件夹监视是自动备份的主力（文件一变就快照）；保存钩子是 .NET Framework
+  宿主的额外加分项，实测只有 CeVIO AI 生效。工程放在 profile 目录之外时，
+  用 watch=<目录> 补上。多个编辑器同时注入时，热键只在“前台那个编辑器”里生效。
+
+
+八、卸载 / 清理
+------------------------------------------------------------
+  * OpenUtau 插件：删掉 Plugins\ 下对应的 "VocalPatch xxx" 文件夹即可
+  * drop-in（四·补）：一键卸载
+        powershell -ExecutionPolicy Bypass -File dropin\deploy_dropin.ps1 -Apply -Remove
+    或纯手动：删掉编辑器文件夹里的 winmm.dll；自包含 .NET 的三个编辑器
+    （OpenUtau / SynthUTAU / UtauV）还要把 hostfxr.orig.dll 改回 hostfxr.dll。
+    删掉 dll 就等于卸载，什么都不残留。
+  * 注入的运行时：它是进程内的，不落盘、不写注册表；关掉编辑器就没了。
+    想停止自动备份/热键，重启对应编辑器即可
+  * 产生的备份/导出文件：手动删  .vocalpatch-autosave\ 、*.bak 、vocalpatch-export\
+
+
+九、常见问题
+------------------------------------------------------------
+  * 注入失败：先看 %TEMP%\vocalpatch-loader.log，会看到具体断在哪一步
+    （CLRCreateInstance / GetRuntime / GetInterface(ICLRRuntimeHost) 后面跟着非 0 的 HRESULT）
+  * 位数对不上：64 位编辑器只能注入 x64 加载器，32 位只能注入 x86
+  * 热键没反应：确认该编辑器窗口是前台窗口；再看日志有没有那一行
+  * “每次保存快照”不生效：多半是原生宿主或 .NET 5+ 宿主（见上），
+    用文件夹监视兜底即可
+  * 出错了：先按 Ctrl+Alt+Z 还原；所有原地修改都留了 .bak 和 .vocalpatch-autosave\
+
+
+提示：注入第三方进程本身有风险，动手前先保存好工程。
+
+
+—— VocalPatch 0.1.0

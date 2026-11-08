@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/VocalPatch.Cli/VocalPatch.Cli.csproj" />
+    <Project Path="src/VocalPatch.Core/VocalPatch.Core.csproj" />
+    <Project Path="src/VocalPatch.Editor/VocalPatch.Editor.csproj" />
+    <Project Path="src/VocalPatch.Injector/VocalPatch.Injector.csproj" />
+    <Project Path="src/VocalPatch.OpenUtau/VocalPatch.OpenUtau.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/VocalPatch.Tests/VocalPatch.Tests.csproj" />
+  </Folder>
+</Solution>

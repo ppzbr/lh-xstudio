@@ -1,0 +1,4 @@
+# Build output. This folder is meant to be uploaded as source; keep the binaries out of it.
+bin/
+obj/
+__pycache__/

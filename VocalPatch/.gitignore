@@ -1,0 +1,28 @@
+# ---- .NET build output ----
+bin/
+obj/
+*.user
+.vs/
+
+# ---- assembled releases (package.ps1 output) ----
+# dist/ and dist-zip/ are generated; the shipped zip belongs on a GitHub Release,
+# not in git history (it is ~5 MB of already-built binaries).
+dist/
+dist-zip/
+
+# ---- native build output ----
+native/out/
+
+# ---- hand-built helper executables (sources are committed, the exes are not) ----
+native/load_host_*.exe
+tools/hotkey_host.exe
+
+# ---- copies parked because a running editor held the file ----
+*.locked-*
+
+# ---- machine-local runtime config (loader path override written at deploy time) ----
+vocalpatch.ini
+
+# ---- python caches (tools/) ----
+__pycache__/
+*.py[cod]

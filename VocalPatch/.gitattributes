@@ -1,0 +1,13 @@
+# This project is Windows-only and ships PowerShell scripts and .txt docs that carry a
+# UTF-8 BOM on purpose: Windows PowerShell 5.1 reads a .ps1/.txt without a BOM as ANSI,
+# and the Chinese text in them turns to mojibake.
+#
+# So git is told to touch nothing: no CRLF normalisation, no encoding conversion.
+# A checkout then reproduces the working tree byte-for-byte, BOM included. Do not add
+# `working-tree-encoding` or per-type `text` rules here - either would tempt git into
+# rewriting (and possibly stripping BOMs from) the very files that must not change.
+* -text
+
+*.dll binary
+*.exe binary
+*.zip binary

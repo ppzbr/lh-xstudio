@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/VocalPatch.XStudio.csproj" />
+    <Project Path="cli/VocalPatch.XStudio.Cli.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/VocalPatch.XStudio.Tests.csproj" />
+  </Folder>
+</Solution>

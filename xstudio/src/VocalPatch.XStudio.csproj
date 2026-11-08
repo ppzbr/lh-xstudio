@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>VocalPatch.XStudio</RootNamespace>
+    <AssemblyName>VocalPatch.XStudio</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <Description>X Studio (.svip3) codec for the VocalPatch neutral song model.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\VocalPatch\src\VocalPatch.Core\VocalPatch.Core.csproj" />
+  </ItemGroup>
+
+</Project>

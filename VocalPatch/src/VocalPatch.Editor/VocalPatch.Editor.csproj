@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- net472 is the payload actually injected into the closed editors (they are
+         .NET Framework / WPF processes, and the native loader hosts the .NET
+         Framework CLR); net8.0 is what the Injector/CLI reference at build time. -->
+    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+    <RootNamespace>VocalPatch.Editor</RootNamespace>
+    <AssemblyName>VocalPatch.Editor</AssemblyName>
+    <Description>In-process runtime injected into singing-synthesis editors: autosave, hotkey actions and save-hook patches.</Description>
+    <!-- Copy NuGet dependencies next to the assembly so the output folder is a
+         complete payload the native loader can drop into an editor process. -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Lib.Harmony" Version="2.3.3" />
+  </ItemGroup>
+
+  <!-- Windows-only by definition (Win32 hotkey hook, DLL injection). -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <AssemblyAttribute Include="System.Runtime.Versioning.SupportedOSPlatformAttribute">
+      <_Parameter1>windows</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VocalPatch.Core\VocalPatch.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="VocalPatch.Tests" />
+  </ItemGroup>
+
+</Project>

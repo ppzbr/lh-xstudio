@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>VocalPatch.OpenUtau</RootNamespace>
+    <AssemblyName>vpatch-utau</AssemblyName>
+    <Description>OpenUtau legacy plugin: applies VocalPatch jobs and pinyin to the UST temp file OpenUtau passes in.</Description>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VocalPatch.Core\VocalPatch.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The plugin file/blocks are internal; the tests exercise them directly so the
+         OpenUtau read-back contract can be asserted without spawning a process. -->
+    <InternalsVisibleTo Include="VocalPatch.Tests" />
+  </ItemGroup>
+
+</Project>

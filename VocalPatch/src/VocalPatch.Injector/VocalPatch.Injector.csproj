@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>VocalPatch.Injector</RootNamespace>
+    <AssemblyName>vpatch-inject</AssemblyName>
+    <Description>Loads the VocalPatch runtime into a running editor and provides file-based autosave.</Description>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.Versioning.SupportedOSPlatformAttribute">
+      <_Parameter1>windows</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VocalPatch.Core\VocalPatch.Core.csproj" />
+    <ProjectReference Include="..\VocalPatch.Editor\VocalPatch.Editor.csproj" />
+  </ItemGroup>
+
+</Project>

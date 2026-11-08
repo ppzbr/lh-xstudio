@@ -1,0 +1,86 @@
+﻿VocalPatch 免安装注入（Drop-in）
+=================================
+
+一句话：把 winmm.dll 复制进编辑器自己的文件夹，打开编辑器就自动注入。
+删掉那个文件 = 卸载。没有安装器，没有注册表。
+
+已经适配的编辑器
+----------------
+  winmm.dll     Synthesizer V Studio 2 Pro
+                Synthesizer V Studio Pro（V1）
+                VoiSona（包括 D:\VoiSona118 的破解版启动器 启动VoiSona(破解版).bat）
+                Piapro Studio NT
+                ACE Studio
+                NetEase Cloud Music XStudio（网易云 X Studio）
+                CeVIO AI
+  hostfxr.dll   OpenUtau
+                SynthUTAU
+                UtauV
+                （三个都是自包含 .NET，原文件改名为 hostfxr.orig.dll 保留）
+
+一键部署（可选，等价于手动复制）
+--------------------------------
+  powershell -ExecutionPolicy Bypass -File .\deploy_dropin.ps1                  只看状态
+  powershell -ExecutionPolicy Bypass -File .\deploy_dropin.ps1 -Apply           安装
+  powershell -ExecutionPolicy Bypass -File .\deploy_dropin.ps1 -Apply -Remove   卸载
+
+  装在 C:\Program Files 里的（VoiSona 官方版、Piapro Studio NT、ACE Studio、CeVIO AI）
+  需要"以管理员身份运行"的 PowerShell 才能写入。
+
+手动方式（就是纯复制粘贴）
+--------------------------
+  1. 复制 winmm.dll
+  2. 粘贴到编辑器 exe 所在的那个文件夹
+     例如 D:\Synthesizer V Studio 2 Pro\  、 D:\VoiSona118\  、 C:\Program Files\ACE Studio\
+  3. 打开编辑器。就完了。
+
+  自包含 .NET 的三个（OpenUtau / SynthUTAU / UtauV）用 hostfxr.dll，且要先把原文件
+  改名保留：
+     D:\OpenUtau\           hostfxr.dll -> hostfxr.orig.dll，再把我们的 hostfxr.dll 放进去
+     D:\SynthUTAU-...\SynthUTAU\   同上
+     D:\UtauV\bin\         同上（注意是 bin 子目录，不是 D:\UtauV\）
+
+原理
+----
+  这些编辑器的导入表里静态引用了 winmm.dll，而 winmm 不在 KnownDLLs 名单里。
+  Windows 解析静态导入时先查"程序所在目录"，所以它会加载我们放在那里的 winmm.dll。
+  我们的 DllMain 只做一件事：开一个线程去加载 vocalpatch_loader.dll。
+  其余每一个导出函数都原样转发给 C:\Windows\System32\winmm.dll —— 行为完全不变，
+  所以在我们的 DLL 坏掉之前，编辑器不会有任何感觉。
+
+  为了永远不会漏掉某个入口点，shim 把 System32\winmm.dll 的全部 180 个导出名
+  都转发了一遍：漏掉一个，静态导入就解析不了，整个编辑器会在启动时直接打不开。
+
+  自包含 .NET 的三个（OpenUtau / SynthUTAU / UtauV），apphost 用绝对路径加载自己
+  目录里的 hostfxr.dll，所以把原文件改名成 hostfxr.orig.dll，再由我们转发过去
+  （必须用它自带的那一份，不能用系统里的版本）。
+
+CeVIO AI 是怎么进去的
+---------------------
+  CeVIO AI.exe / CeVIO AI.orig.exe / CeVIOActivator.Loader.exe 都是纯 .NET 程序集，
+  没有原生导入表，所以它自己永远碰不到 winmm。
+
+  但它的音频栈碰得到：MediaSuite.dll、CeVIO.Audio.dll、CeVIO.Talk.External2_x64.dll
+  都静态引用了 winmm.dll。这几个 DLL 的导入一样走"程序所在目录优先"的解析顺序，
+  所以把 winmm.dll 放进 C:\Program Files\CeVIO\CeVIO AI\ 就能进进程——
+  和别的编辑器完全同一套机制，没有改配置文件、没有动 CeVIO 的任何东西。
+
+  附带好处：完全不受破解/激活器影响，它加载哪个进程我们就在哪个进程里。
+
+自检（怎么确认真的成功了）
+--------------------------
+  注入成功后：
+    %TEMP%\vocalpatch-loader.log    最后一行是 loader ok
+    %TEMP%\vocalpatch-editor.log    有该进程 pid 的 profile / watching / hotkey
+  快捷键：Ctrl+Alt+V / S / Q / C / T / N / P / H / L / E / Z（十一个动作各一个）
+
+移植到别的电脑
+--------------
+  shim 里烘焙的加载器路径是本机的 dist\payload\vocalpatch_loader.dll。
+  换机器时它按这个顺序找：
+    1. 环境变量 VOCALPATCH_LOADER
+    2. 同目录 vocalpatch.ini 里的 loader=<路径>
+    3. 同目录的 vocalpatch_loader.dll
+    4. %LOCALAPPDATA%\VocalPatch\payload\vocalpatch_loader.dll
+    5. %ProgramData%\VocalPatch\payload\vocalpatch_loader.dll
+    6. 编译时烘焙的路径
